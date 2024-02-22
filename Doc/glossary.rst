@@ -136,9 +136,16 @@ Glossary
       :exc:`StopAsyncIteration` exception.  Introduced by :pep:`492`.
 
    attribute
-      A value associated with an object which is referenced by name using
-      dotted expressions.  For example, if an object *o* has an attribute
+      A value associated with an object which is usually referenced by name
+      using dotted expressions.
+      For example, if an object *o* has an attribute
       *a* it would be referenced as *o.a*.
+
+      It is possible to give an object an attribute whose name is not an
+      identifier as defined by :ref:`identifiers`, for example using
+      :func:`setattr`, if the object allows it.
+      Such an attribute will not be accessible using a dotted expression,
+      and would instead need to be retrieved with :func:`getattr`.
 
    awaitable
       An object that can be used in an :keyword:`await` expression.  Can be
@@ -161,8 +168,9 @@ Glossary
       :class:`str` objects.
 
    borrowed reference
-      In Python's C API, a borrowed reference is a reference to an object.
-      It does not modify the object reference count. It becomes a dangling
+      In Python's C API, a borrowed reference is a reference to an object,
+      where the code using the object does not own the reference.
+      It becomes a dangling
       pointer if the object is destroyed. For example, a garbage collection can
       remove the last :term:`strong reference` to the object and so destroy it.
 
@@ -202,6 +210,16 @@ Glossary
 
       A list of bytecode instructions can be found in the documentation for
       :ref:`the dis module <bytecodes>`.
+
+   callable
+      A callable is an object that can be called, possibly with a set
+      of arguments (see :term:`argument`), with the following syntax::
+
+         callable(argument1, argument2, ...)
+
+      A :term:`function`, and by extension a :term:`method`, is a callable.
+      An instance of a class that implements the :meth:`~object.__call__`
+      method is also a callable.
 
    callback
       A subroutine function which is passed as an argument to be executed at
@@ -542,7 +560,7 @@ Glossary
       machines.
 
       However, some extension modules, either standard or third-party,
-      are designed so as to release the GIL when doing computationally-intensive
+      are designed so as to release the GIL when doing computationally intensive
       tasks such as compression or hashing.  Also, the GIL is always released
       when doing I/O.
 
@@ -576,9 +594,9 @@ Glossary
       from their :func:`id`.
 
    IDLE
-      An Integrated Development Environment for Python.  IDLE is a basic editor
-      and interpreter environment which ships with the standard distribution of
-      Python.
+      An Integrated Development and Learning Environment for Python.
+      :ref:`idle` is a basic editor and interpreter environment
+      which ships with the standard distribution of Python.
 
    immutable
       An object with a fixed value.  Immutable objects include numbers, strings and
@@ -876,7 +894,7 @@ Glossary
 
    package
       A Python :term:`module` which can contain submodules or recursively,
-      subpackages.  Technically, a package is a Python module with an
+      subpackages.  Technically, a package is a Python module with a
       ``__path__`` attribute.
 
       See also :term:`regular package` and :term:`namespace package`.
@@ -1125,8 +1143,10 @@ Glossary
 
    strong reference
       In Python's C API, a strong reference is a reference to an object
-      which increments the object's reference count when it is created and
-      decrements the object's reference count when it is deleted.
+      which is owned by the code holding the reference.  The strong
+      reference is taken by calling :c:func:`Py_INCREF` when the
+      reference is created and released with :c:func:`Py_DECREF`
+      when the reference is deleted.
 
       The :c:func:`Py_NewRef` function can be used to create a strong reference
       to an object. Usually, the :c:func:`Py_DECREF` function must be called on

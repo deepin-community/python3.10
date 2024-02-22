@@ -15,8 +15,8 @@ Object Protocol
 .. c:macro:: Py_RETURN_NOTIMPLEMENTED
 
    Properly handle returning :c:data:`Py_NotImplemented` from within a C
-   function (that is, increment the reference count of NotImplemented and
-   return it).
+   function (that is, create a new :term:`strong reference`
+   to NotImplemented and return it).
 
 
 .. c:function:: int PyObject_Print(PyObject *o, FILE *fp, int flags)
@@ -161,6 +161,15 @@ Object Protocol
    If *o1* and *o2* are the same object, :c:func:`PyObject_RichCompareBool`
    will always return ``1`` for :const:`Py_EQ` and ``0`` for :const:`Py_NE`.
 
+.. c:function:: PyObject* PyObject_Format(PyObject *obj, PyObject *format_spec)
+
+   Format *obj* using *format_spec*. This is equivalent to the Python
+   expression ``format(obj, format_spec)``.
+
+   *format_spec* may be ``NULL``. In this case the call is equivalent
+   to ``format(obj)``.
+   Returns the formatted string on success, ``NULL`` on failure.
+
 .. c:function:: PyObject* PyObject_Repr(PyObject *o)
 
    .. index:: builtin: repr
@@ -263,7 +272,7 @@ Object Protocol
 
 .. c:function:: Py_hash_t PyObject_HashNotImplemented(PyObject *o)
 
-   Set a :exc:`TypeError` indicating that ``type(o)`` is not hashable and return ``-1``.
+   Set a :exc:`TypeError` indicating that ``type(o)`` is not :term:`hashable` and return ``-1``.
    This function receives special treatment when stored in a ``tp_hash`` slot,
    allowing a type to explicitly indicate to the interpreter that it is not
    hashable.
@@ -289,11 +298,12 @@ Object Protocol
 
    When *o* is non-``NULL``, returns a type object corresponding to the object type
    of object *o*. On failure, raises :exc:`SystemError` and returns ``NULL``.  This
-   is equivalent to the Python expression ``type(o)``. This function increments the
-   reference count of the return value. There's really no reason to use this
+   is equivalent to the Python expression ``type(o)``.
+   This function creates a new :term:`strong reference` to the return value.
+   There's really no reason to use this
    function instead of the :c:func:`Py_TYPE()` function, which returns a
-   pointer of type :c:type:`PyTypeObject*`, except when the incremented reference
-   count is needed.
+   pointer of type :c:expr:`PyTypeObject*`, except when a new
+   :term:`strong reference` is needed.
 
 
 .. c:function:: int PyObject_TypeCheck(PyObject *o, PyTypeObject *type)

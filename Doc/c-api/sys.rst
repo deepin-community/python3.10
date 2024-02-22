@@ -8,8 +8,9 @@ Operating System Utilities
 .. c:function:: PyObject* PyOS_FSPath(PyObject *path)
 
    Return the file system representation for *path*. If the object is a
-   :class:`str` or :class:`bytes` object, then its reference count is
-   incremented. If the object implements the :class:`os.PathLike` interface,
+   :class:`str` or :class:`bytes` object, then a new
+   :term:`strong reference` is returned.
+   If the object implements the :class:`os.PathLike` interface,
    then :meth:`~os.PathLike.__fspath__` is returned as long as it is a
    :class:`str` or :class:`bytes` object. Otherwise :exc:`TypeError` is raised
    and ``NULL`` is returned.
@@ -105,7 +106,7 @@ Operating System Utilities
 
    Return the current signal handler for signal *i*.  This is a thin wrapper around
    either :c:func:`sigaction` or :c:func:`signal`.  Do not call those functions
-   directly! :c:type:`PyOS_sighandler_t` is a typedef alias for :c:type:`void
+   directly! :c:type:`PyOS_sighandler_t` is a typedef alias for :c:expr:`void
    (\*)(int)`.
 
 
@@ -114,7 +115,7 @@ Operating System Utilities
    Set the signal handler for signal *i* to be *h*; return the old signal handler.
    This is a thin wrapper around either :c:func:`sigaction` or :c:func:`signal`.  Do
    not call those functions directly!  :c:type:`PyOS_sighandler_t` is a typedef
-   alias for :c:type:`void (\*)(int)`.
+   alias for :c:expr:`void (\*)(int)`.
 
 .. c:function:: wchar_t* Py_DecodeLocale(const char* arg, size_t *size)
 
@@ -352,7 +353,7 @@ accessible to C code.  They all work with the current interpreter thread's
    silently abort the operation by raising an error subclassed from
    :class:`Exception` (other errors will not be silenced).
 
-   The hook function is of type :c:type:`int (*)(const char *event, PyObject
+   The hook function is of type :c:expr:`int (*)(const char *event, PyObject
    *args, void *userData)`, where *args* is guaranteed to be a
    :c:type:`PyTupleObject`. The hook function is always called with the GIL
    held by the Python interpreter that raised the event.
