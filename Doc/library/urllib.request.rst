@@ -1269,7 +1269,7 @@ involved.  For example, the :envvar:`http_proxy` environment variable is read to
 obtain the HTTP proxy's URL.
 
 This example replaces the default :class:`ProxyHandler` with one that uses
-programmatically-supplied proxy URLs, and adds proxy authorization support with
+programmatically supplied proxy URLs, and adds proxy authorization support with
 :class:`ProxyBasicAuthHandler`. ::
 
    proxy_handler = urllib.request.ProxyHandler({'http': 'http://www.example.com:3128/'})
@@ -1619,7 +1619,7 @@ The typical response object is a :class:`urllib.response.addinfourl` instance:
       .. deprecated:: 3.9
          Deprecated in favor of :attr:`~addinfourl.status`.
 
-   .. method:: getstatus()
+   .. method:: getcode()
 
       .. deprecated:: 3.9
          Deprecated in favor of :attr:`~addinfourl.status`.

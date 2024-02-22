@@ -203,25 +203,6 @@ class ElementTreeTest(unittest.TestCase):
     def test_interface(self):
         # Test element tree interface.
 
-        def check_string(string):
-            len(string)
-            for char in string:
-                self.assertEqual(len(char), 1,
-                        msg="expected one-character string, got %r" % char)
-            new_string = string + ""
-            new_string = string + " "
-            string[:0]
-
-        def check_mapping(mapping):
-            len(mapping)
-            keys = mapping.keys()
-            items = mapping.items()
-            for key in keys:
-                item = mapping[key]
-            mapping["key"] = "value"
-            self.assertEqual(mapping["key"], "value",
-                    msg="expected value string, got %r" % mapping["key"])
-
         def check_element(element):
             self.assertTrue(ET.iselement(element), msg="not an element")
             direlem = dir(element)
@@ -231,12 +212,12 @@ class ElementTreeTest(unittest.TestCase):
                 self.assertIn(attr, direlem,
                         msg='no %s visible by dir' % attr)
 
-            check_string(element.tag)
-            check_mapping(element.attrib)
+            self.assertIsInstance(element.tag, str)
+            self.assertIsInstance(element.attrib, dict)
             if element.text is not None:
-                check_string(element.text)
+                self.assertIsInstance(element.text, str)
             if element.tail is not None:
-                check_string(element.tail)
+                self.assertIsInstance(element.tail, str)
             for elem in element:
                 check_element(elem)
 
@@ -3739,13 +3720,7 @@ class IOTest(unittest.TestCase):
         tree = ET.ElementTree(ET.XML('''<site>\xf8</site>'''))
         tree.write(TESTFN, encoding='unicode')
         with open(TESTFN, 'rb') as f:
-            data = f.read()
-            expected = "<site>\xf8</site>".encode(encoding, 'xmlcharrefreplace')
-            if encoding.lower() in ('utf-8', 'ascii'):
-                self.assertEqual(data, expected)
-            else:
-                self.assertIn(b"<?xml version='1.0' encoding=", data)
-                self.assertIn(expected, data)
+            self.assertEqual(f.read(), b"<site>\xc3\xb8</site>")
 
     def test_write_to_text_file(self):
         self.addCleanup(os_helper.unlink, TESTFN)
@@ -3760,17 +3735,13 @@ class IOTest(unittest.TestCase):
             tree.write(f, encoding='unicode')
             self.assertFalse(f.closed)
         with open(TESTFN, 'rb') as f:
-            self.assertEqual(f.read(),  convlinesep(
-                             b'''<?xml version='1.0' encoding='ascii'?>\n'''
-                             b'''<site>&#248;</site>'''))
+            self.assertEqual(f.read(),  b'''<site>&#248;</site>''')
 
         with open(TESTFN, 'w', encoding='ISO-8859-1') as f:
             tree.write(f, encoding='unicode')
             self.assertFalse(f.closed)
         with open(TESTFN, 'rb') as f:
-            self.assertEqual(f.read(),  convlinesep(
-                             b'''<?xml version='1.0' encoding='ISO-8859-1'?>\n'''
-                             b'''<site>\xf8</site>'''))
+            self.assertEqual(f.read(), b'''<site>\xf8</site>''')
 
     def test_write_to_binary_file(self):
         self.addCleanup(os_helper.unlink, TESTFN)

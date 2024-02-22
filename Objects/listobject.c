@@ -77,8 +77,14 @@ list_resize(PyListObject *self, Py_ssize_t newsize)
 
     if (newsize == 0)
         new_allocated = 0;
-    num_allocated_bytes = new_allocated * sizeof(PyObject *);
-    items = (PyObject **)PyMem_Realloc(self->ob_item, num_allocated_bytes);
+    if (new_allocated <= (size_t)PY_SSIZE_T_MAX / sizeof(PyObject *)) {
+        num_allocated_bytes = new_allocated * sizeof(PyObject *);
+        items = (PyObject **)PyMem_Realloc(self->ob_item, num_allocated_bytes);
+    }
+    else {
+        // integer overflow
+        items = NULL;
+    }
     if (items == NULL) {
         PyErr_NoMemory();
         return -1;
@@ -95,6 +101,12 @@ list_preallocate_exact(PyListObject *self, Py_ssize_t size)
     assert(self->ob_item == NULL);
     assert(size > 0);
 
+    /* Since the Python memory allocator has granularity of 16 bytes on 64-bit
+     * platforms (8 on 32-bit), there is no benefit of allocating space for
+     * the odd number of items, and there is no drawback of rounding the
+     * allocated size up to the nearest even number.
+     */
+    size = (size + 1) & ~(size_t)1;
     PyObject **items = PyMem_New(PyObject*, size);
     if (items == NULL) {
         PyErr_NoMemory();
@@ -3393,17 +3405,31 @@ listiter_reduce_general(void *_it, int forward)
     _Py_IDENTIFIER(reversed);
     PyObject *list;
 
+    /* _PyEval_GetBuiltinId can invoke arbitrary code,
+     * call must be before access of iterator pointers.
+     * see issue #101765 */
+
     /* the objects are not the same, index is of different types! */
     if (forward) {
+        PyObject *iter = _PyEval_GetBuiltinId(&PyId_iter);
+        if (!iter) {
+            return NULL;
+        }
         listiterobject *it = (listiterobject *)_it;
-        if (it->it_seq)
-            return Py_BuildValue("N(O)n", _PyEval_GetBuiltinId(&PyId_iter),
-                                 it->it_seq, it->it_index);
+        if (it->it_seq) {
+            return Py_BuildValue("N(O)n", iter, it->it_seq, it->it_index);
+        }
+        Py_DECREF(iter);
     } else {
+        PyObject *reversed = _PyEval_GetBuiltinId(&PyId_reversed);
+        if (!reversed) {
+            return NULL;
+        }
         listreviterobject *it = (listreviterobject *)_it;
-        if (it->it_seq)
-            return Py_BuildValue("N(O)n", _PyEval_GetBuiltinId(&PyId_reversed),
-                                 it->it_seq, it->it_index);
+        if (it->it_seq) {
+            return Py_BuildValue("N(O)n", reversed, it->it_seq, it->it_index);
+        }
+        Py_DECREF(reversed);
     }
     /* empty iterator, create an empty list */
     list = PyList_New(0);

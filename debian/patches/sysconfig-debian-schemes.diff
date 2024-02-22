@@ -50,11 +50,11 @@
 +        prefix_scheme = 'posix_prefix'
 +    else:
 +        # default to /usr for package builds, /usr/local otherwise
-+        deb_build = os.environ.get('DEB_PYTHON_INSTALL_LAYOUT', 'posix_prefix')
++        deb_build = os.environ.get('DEB_PYTHON_INSTALL_LAYOUT', 'posix_local')
 +        if deb_build in ('deb', 'deb_system'):
 +            prefix_scheme = 'deb_system'
 +        else:
-+            prefix_scheme = 'posix_prefix'
++            prefix_scheme = 'posix_local'
 +
      return {
 -        'prefix': 'posix_prefix',

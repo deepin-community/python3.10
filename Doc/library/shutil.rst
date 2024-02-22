@@ -194,7 +194,7 @@ Directory and files operations
 
    When *follow_symlinks* is false, and *src* is a symbolic
    link, :func:`copy2` attempts to copy all metadata from the
-   *src* symbolic link to the newly-created *dst* symbolic link.
+   *src* symbolic link to the newly created *dst* symbolic link.
    However, this functionality is not available on all platforms.
    On platforms where some or all of this functionality is
    unavailable, :func:`copy2` will preserve all the metadata
@@ -568,12 +568,18 @@ provided.  They rely on the :mod:`zipfile` and :mod:`tarfile` modules.
 
    .. note::
 
-      This function is not thread-safe.
+      This function is not thread-safe when custom archivers registered
+      with :func:`register_archive_format` are used.  In this case it
+      temporarily changes the current working directory of the process
+      to perform archiving.
 
    .. versionchanged:: 3.8
       The modern pax (POSIX.1-2001) format is now used instead of
       the legacy GNU format for archives created with ``format="tar"``.
 
+   .. versionchanged:: 3.10.6
+      This function is now made thread-safe during creation of standard
+      ``.zip`` and tar archives.
 
 .. function:: get_archive_formats()
 
@@ -614,7 +620,7 @@ provided.  They rely on the :mod:`zipfile` and :mod:`tarfile` modules.
    Remove the archive format *name* from the list of supported formats.
 
 
-.. function:: unpack_archive(filename[, extract_dir[, format]])
+.. function:: unpack_archive(filename[, extract_dir[, format[, filter]]])
 
    Unpack an archive. *filename* is the full path of the archive.
 
@@ -628,6 +634,15 @@ provided.  They rely on the :mod:`zipfile` and :mod:`tarfile` modules.
    registered for that extension.  In case none is found,
    a :exc:`ValueError` is raised.
 
+   The keyword-only *filter* argument, which was added in Python 3.10.12,
+   is passed to the underlying unpacking function.
+   For zip files, *filter* is not accepted.
+   For tar files, it is recommended to set it to ``'data'``,
+   unless using features specific to tar and UNIX-like filesystems.
+   (See :ref:`tarfile-extraction-filter` for details.)
+   The ``'data'`` filter will become the default for tar files
+   in Python 3.14.
+
    .. audit-event:: shutil.unpack_archive filename,extract_dir,format shutil.unpack_archive
 
    .. warning::
@@ -640,6 +655,9 @@ provided.  They rely on the :mod:`zipfile` and :mod:`tarfile` modules.
    .. versionchanged:: 3.7
       Accepts a :term:`path-like object` for *filename* and *extract_dir*.
 
+   .. versionchanged:: 3.10.12
+      Added the *filter* argument.
+
 .. function:: register_unpack_format(name, extensions, function[, extra_args[, description]])
 
    Registers an unpack format. *name* is the name of the format and
@@ -647,11 +665,14 @@ provided.  They rely on the :mod:`zipfile` and :mod:`tarfile` modules.
    ``.zip`` for Zip files.
 
    *function* is the callable that will be used to unpack archives. The
-   callable will receive the path of the archive, followed by the directory
-   the archive must be extracted to.
+   callable will receive:
 
-   When provided, *extra_args* is a sequence of ``(name, value)`` tuples that
-   will be passed as keywords arguments to the callable.
+   - the path of the archive, as a positional argument;
+   - the directory the archive must be extracted to, as a positional argument;
+   - possibly a *filter* keyword argument, if it was given to
+     :func:`unpack_archive`;
+   - additional keyword arguments, specified by *extra_args* as a sequence
+     of ``(name, value)`` tuples.
 
    *description* can be provided to describe the format, and will be returned
    by the :func:`get_unpack_formats` function.
@@ -785,4 +806,4 @@ Querying the size of the output terminal
    http://www.manpagez.com/man/3/copyfile/
 
 .. _`Other Environment Variables`:
-   http://pubs.opengroup.org/onlinepubs/7908799/xbd/envvar.html#tag_002_003
+   https://pubs.opengroup.org/onlinepubs/7908799/xbd/envvar.html#tag_002_003

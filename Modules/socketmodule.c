@@ -996,6 +996,7 @@ init_sockobject(PySocketSockObject *s,
 }
 
 
+#ifdef HAVE_SOCKETPAIR
 /* Create a new socket object.
    This just creates the object and initializes it.
    If the creation fails, return NULL and set an exception (implicit
@@ -1015,6 +1016,7 @@ new_sockobject(SOCKET_T fd, int family, int type, int proto)
     }
     return s;
 }
+#endif
 
 
 /* Lock to allow python interpreter to continue, but only allow one
@@ -1051,6 +1053,7 @@ setipaddr(const char *name, struct sockaddr *addr_ret, size_t addr_ret_size, int
            subsequent call to getaddrinfo() does not destroy the
            outcome of the first call. */
         if (error) {
+            res = NULL;  // no-op, remind us that it is invalid; gh-100795
             set_gaierror(error);
             return -1;
         }
@@ -1161,6 +1164,7 @@ setipaddr(const char *name, struct sockaddr *addr_ret, size_t addr_ret_size, int
 #endif
     Py_END_ALLOW_THREADS
     if (error) {
+        res = NULL;  // no-op, remind us that it is invalid; gh-100795
         set_gaierror(error);
         return -1;
     }
@@ -1673,8 +1677,10 @@ getsockaddrarg(PySocketSockObject *s, PyObject *args,
 
         struct sockaddr_un* addr = &addrbuf->un;
 #ifdef __linux__
-        if (path.len > 0 && *(const char *)path.buf == 0) {
-            /* Linux abstract namespace extension */
+        if (path.len == 0 || *(const char *)path.buf == 0) {
+            /* Linux abstract namespace extension:
+               - Empty address auto-binding to an abstract address
+               - Address that starts with null byte */
             if ((size_t)path.len > sizeof addr->sun_path) {
                 PyErr_SetString(PyExc_OSError,
                                 "AF_UNIX path too long");
@@ -6510,6 +6516,7 @@ socket_getaddrinfo(PyObject *self, PyObject *args, PyObject* kwargs)
     error = getaddrinfo(hptr, pptr, &hints, &res0);
     Py_END_ALLOW_THREADS
     if (error) {
+        res0 = NULL;  // gh-100795
         set_gaierror(error);
         goto err;
     }
@@ -6604,6 +6611,7 @@ socket_getnameinfo(PyObject *self, PyObject *args)
     error = getaddrinfo(hostp, pbuf, &hints, &res);
     Py_END_ALLOW_THREADS
     if (error) {
+        res = NULL;  // gh-100795
         set_gaierror(error);
         goto fail;
     }

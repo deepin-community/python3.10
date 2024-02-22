@@ -1144,7 +1144,7 @@ SSL Sockets
 
    .. versionchanged:: 3.5
       The :meth:`shutdown` does not reset the socket timeout each time bytes
-      are received or sent. The socket timeout is now to maximum total duration
+      are received or sent. The socket timeout is now the maximum total duration
       of the shutdown.
 
    .. deprecated:: 3.6
@@ -1177,8 +1177,8 @@ SSL sockets also have the following additional methods and attributes:
    cause write operations.
 
    .. versionchanged:: 3.5
-      The socket timeout is no more reset each time bytes are received or sent.
-      The socket timeout is now to maximum total duration to read up to *len*
+      The socket timeout is no longer reset each time bytes are received or sent.
+      The socket timeout is now the maximum total duration to read up to *len*
       bytes.
 
    .. deprecated:: 3.6
@@ -1196,8 +1196,8 @@ SSL sockets also have the following additional methods and attributes:
    also cause read operations.
 
    .. versionchanged:: 3.5
-      The socket timeout is no more reset each time bytes are received or sent.
-      The socket timeout is now to maximum total duration to write *buf*.
+      The socket timeout is no longer reset each time bytes are received or sent.
+      The socket timeout is now the maximum total duration to write *buf*.
 
    .. deprecated:: 3.6
       Use :meth:`~SSLSocket.send` instead of :meth:`~SSLSocket.write`.
@@ -1224,14 +1224,14 @@ SSL sockets also have the following additional methods and attributes:
       :attr:`~SSLSocket.context` is true.
 
    .. versionchanged:: 3.5
-      The socket timeout is no more reset each time bytes are received or sent.
-      The socket timeout is now to maximum total duration of the handshake.
+      The socket timeout is no longer reset each time bytes are received or sent.
+      The socket timeout is now the maximum total duration of the handshake.
 
    .. versionchanged:: 3.7
       Hostname or IP address is matched by OpenSSL during handshake. The
       function :func:`match_hostname` is no longer used. In case OpenSSL
       refuses a hostname or IP address, the handshake is aborted early and
-      a TLS alert message is send to the peer.
+      a TLS alert message is sent to the peer.
 
 .. method:: SSLSocket.getpeercert(binary_form=False)
 
@@ -1311,7 +1311,7 @@ SSL sockets also have the following additional methods and attributes:
 
 .. method:: SSLSocket.shared_ciphers()
 
-   Return the list of ciphers shared by the client during the handshake.  Each
+   Return the list of ciphers available in both the client and server.  Each
    entry of the returned list is a three-value tuple containing the name of the
    cipher, the version of the SSL protocol that defines its use, and the number
    of secret bits the cipher uses.  :meth:`~SSLSocket.shared_ciphers` returns
@@ -1910,7 +1910,7 @@ to speed up repeated connections from the same clients.
 .. method:: SSLContext.session_stats()
 
    Get statistics about the SSL sessions created or managed by this context.
-   A dictionary is returned which maps the names of each `piece of information <https://www.openssl.org/docs/man1.1.1/ssl/SSL_CTX_sess_number.html>`_ to their
+   A dictionary is returned which maps the names of each `piece of information <https://www.openssl.org/docs/man1.1.1/man3/SSL_CTX_sess_number.html>`_ to their
    numeric values.  For example, here is the total number of hits and misses
    in the session cache since the context was created::
 
@@ -2690,7 +2690,7 @@ disabled by default.
    >>> client_context.maximum_version = ssl.TLSVersion.TLSv1_3
 
 
-The SSL context created above will only allow TLSv1.2 and later (if
+The SSL context created above will only allow TLSv1.3 and later (if
 supported by your system) connections to a server. :const:`PROTOCOL_TLS_CLIENT`
 implies certificate validation and hostname checks by default. You have to
 load certificates into the context.
@@ -2704,7 +2704,7 @@ enabled when negotiating a SSL session is possible through the
 :meth:`SSLContext.set_ciphers` method.  Starting from Python 3.2.3, the
 ssl module disables certain weak ciphers by default, but you may want
 to further restrict the cipher choice. Be sure to read OpenSSL's documentation
-about the `cipher list format <https://www.openssl.org/docs/manmaster/man1/ciphers.html#CIPHER-LIST-FORMAT>`_.
+about the `cipher list format <https://www.openssl.org/docs/man1.1.1/man1/ciphers.html#CIPHER-LIST-FORMAT>`_.
 If you want to check which ciphers are enabled by a given cipher list, use
 :meth:`SSLContext.get_ciphers` or the ``openssl ciphers`` command on your
 system.

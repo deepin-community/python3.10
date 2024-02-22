@@ -526,6 +526,8 @@ Retrieving source code
    object and the line number indicates where in the original source file the first
    line of code was found.  An :exc:`OSError` is raised if the source code cannot
    be retrieved.
+   A :exc:`TypeError` is raised if the object is a built-in module, class, or
+   function.
 
    .. versionchanged:: 3.3
       :exc:`OSError` is raised instead of :exc:`IOError`, now an alias of the
@@ -538,6 +540,8 @@ Retrieving source code
    class, method, function, traceback, frame, or code object.  The source code is
    returned as a single string.  An :exc:`OSError` is raised if the source code
    cannot be retrieved.
+   A :exc:`TypeError` is raised if the object is a built-in module, class, or
+   function.
 
    .. versionchanged:: 3.3
       :exc:`OSError` is raised instead of :exc:`IOError`, now an alias of the
@@ -641,7 +645,7 @@ function.
    modified copy.
 
    .. versionchanged:: 3.5
-      Signature objects are picklable and hashable.
+      Signature objects are picklable and :term:`hashable`.
 
    .. attribute:: Signature.empty
 
@@ -719,7 +723,7 @@ function.
    you can use :meth:`Parameter.replace` to create a modified copy.
 
    .. versionchanged:: 3.5
-      Parameter objects are picklable and hashable.
+      Parameter objects are picklable and :term:`hashable`.
 
    .. attribute:: Parameter.empty
 
@@ -753,8 +757,9 @@ function.
 
    .. attribute:: Parameter.kind
 
-      Describes how argument values are bound to the parameter.  Possible values
-      (accessible via :class:`Parameter`, like ``Parameter.KEYWORD_ONLY``):
+      Describes how argument values are bound to the parameter.  The possible
+      values are accessible via :class:`Parameter` (like ``Parameter.KEYWORD_ONLY``),
+      and support comparison and ordering, in the following order:
 
       .. tabularcolumns:: |l|L|
 
@@ -1147,7 +1152,7 @@ Classes and functions
      doesn't have its own annotations dict, returns an empty dict.
    * All accesses to object members and dict values are done
      using ``getattr()`` and ``dict.get()`` for safety.
-   * Always, always, always returns a freshly-created dict.
+   * Always, always, always returns a freshly created dict.
 
    ``eval_str`` controls whether or not values of type ``str`` are replaced
    with the result of calling :func:`eval()` on those values:
